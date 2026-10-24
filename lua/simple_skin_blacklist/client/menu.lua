@@ -7,6 +7,9 @@ local SWITCH_TYPE = 5 -- Round knob
 local ALIGNMENT_LEFT = 4
 local PREVIEW_WIDTH = 300
 local PREVIEW_FOV = 30
+local PREVIEW_MARGIN = 1.1 -- Free space around the model
+local PREVIEW_ANGLE = Angle( 0, 25, 0 ) -- Three-quarter view
+local HALF = 0.5
 local NAME_COLUMN_WIDTH = 160
 local CATEGORY_ICON = 'icon16/user_delete.png'
 local MENU_COMMAND = 'simple_skin_blacklist_menu'
@@ -31,6 +34,32 @@ local function paintLine( line, w, h )
 
 end
 
+--[[
+	Move the camera so the whole model height fits the panel.
+	The FOV is horizontal, so the vertical one of the tall panel depends on its aspect ratio.
+]]--
+local function updatePreviewCamera()
+
+	local w, h = preview:GetSize()
+	if h == 0 or not preview.modelCenter then return end
+
+	local distance = preview.modelHalfHeight * PREVIEW_MARGIN * ( w / h ) / math.tan( math.rad( PREVIEW_FOV * HALF ) )
+	preview:SetLookAt( preview.modelCenter )
+	preview:SetCamPos( preview.modelCenter + Vector( distance, 0, 0 ) )
+
+end
+
+local function showPreview( path )
+
+	preview:SetModel( path )
+
+	local mins, maxs = preview.Entity:GetRenderBounds()
+	preview.modelCenter = ( mins + maxs ) * HALF
+	preview.modelHalfHeight = ( maxs.z - mins.z ) * HALF
+	updatePreviewCamera()
+
+end
+
 -- Left click toggles the model instead of selecting the row
 local function onLinePressed( line, keyCode )
 
@@ -45,7 +74,7 @@ end
 
 -- The click toggles the model, so the preview follows the cursor
 local function onLineHovered( line )
-	preview:SetModel( line.modelPath )
+	showPreview( line.modelPath )
 end
 
 --[[
@@ -150,7 +179,13 @@ local function buildMenu()
 	preview:SetWide( TeraLib.util.ScrW( PREVIEW_WIDTH ) )
 	preview:DockMargin( pad, 0, 0, 0 )
 	preview:SetFOV( PREVIEW_FOV )
-	preview:SetModel( LocalPlayer():GetModel() )
+	-- Still three-quarter view instead of the default rotation
+	function preview:LayoutEntity( ent )
+		ent:SetAngles( PREVIEW_ANGLE )
+	end
+	-- The size is known only after the layout, the camera depends on it
+	preview.PerformLayout = updatePreviewCamera
+	showPreview( LocalPlayer():GetModel() )
 
 	modelList = TeraLib.vgui.ListView( {
 		parent = panel,
