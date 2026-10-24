@@ -1,0 +1,11 @@
+{
+  "title": "Простой блокировщик скинов",
+  "type": "tool",
+  "tags": [
+    "build"
+  ],
+  "ignore": [
+    ".gitattributes",
+    "*.md"
+  ]
+}
