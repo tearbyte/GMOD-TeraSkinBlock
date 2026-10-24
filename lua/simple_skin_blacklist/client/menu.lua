@@ -2,6 +2,8 @@
 local PAGE_PADDING = 5
 local ROW_HEIGHT = 24
 local HELP_LINES = 3
+local HELP_ALPHA = 140
+local SEARCH_GAP = 2 -- Paddings between the switches and the search
 local SWITCH_PADDING = 4
 local SWITCH_TYPE = 5 -- Round knob
 local ALIGNMENT_LEFT = 4
@@ -27,8 +29,9 @@ end
 -- Blacklisted rows are colored like a disabled switch, allowed ones keep the list colors. The selection isn't shown
 local function paintLine( line, w, h )
 
-	local color = line.m_bAlt and modelList.altLineColor or modelList.lineColor
-	if SSB.blacklist[ line.modelPath ] then color = TeraLib.vgui.appearance.switchOff end
+	local isBlacklisted = SSB.blacklist[ line.modelPath ] == true
+	local color = isBlacklisted and TeraLib.vgui.appearance.switchOff or ( line.m_bAlt and modelList.altLineColor or modelList.lineColor )
+	if line:IsHovered() then color = TeraLib.util.HoverColor( color ) end
 
 	draw.RoundedBox( 0, 0, 0, w, h, color )
 
@@ -142,6 +145,8 @@ local function buildMenu()
 	pad = TeraLib.util.ScrW( PAGE_PADDING )
 	rowHeight = TeraLib.util.ScrH( ROW_HEIGHT )
 
+	local app = TeraLib.vgui.appearance
+
 	local panel = vgui.Create( 'DPanel' )
 	panel:DockPadding( pad, pad, pad, pad )
 	panel.Paint = paintBackground
@@ -160,7 +165,7 @@ local function buildMenu()
 		parent = panel,
 		dock = TOP,
 		size = { x = 0, y = rowHeight },
-		dockMargin = { 0, 0, 0, pad },
+		dockMargin = { 0, pad * SEARCH_GAP, 0, pad },
 		placeholder = TeraLib.lang.GetPhrase( 'SSB.Search' ),
 		OnUpdate = function( _, value ) fillModelList( string.lower( value ) ) end,
 	} )
@@ -173,6 +178,8 @@ local function buildMenu()
 		text = TeraLib.lang.GetPhrase( 'SSB.Help' ),
 	} )
 	help:SetWrap( true )
+	-- Dimmed, so it doesn't compete with the list
+	help:SetTextColor( ColorAlpha( app.text, HELP_ALPHA ) )
 
 	preview = vgui.Create( 'DModelPanel', panel )
 	preview:Dock( RIGHT )
