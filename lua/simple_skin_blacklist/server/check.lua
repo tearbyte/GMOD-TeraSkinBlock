@@ -15,7 +15,7 @@ local checkedAppearance = setmetatable( {}, { __mode = 'k' } )
 local function getAppearanceKey( ply )
 
 	local model = ply:GetModel()
-	if not SSB.forbidden[ string.lower( model ) ] then return model end
+	if not SSB.forbidden[ SSB.NormalizePath( model ) ] then return model end
 
 	local key = model .. KEY_SEPARATOR .. ply:GetSkin()
 	for i = 0, ply:GetNumBodyGroups() - 1 do
@@ -51,7 +51,7 @@ end
 ]]--
 local function replaceForbiddenValues( ply )
 
-	local groups = SSB.forbidden[ string.lower( ply:GetModel() ) ]
+	local groups = SSB.forbidden[ SSB.NormalizePath( ply:GetModel() ) ]
 	if not groups then return false end
 
 	local replaced = false
@@ -92,8 +92,8 @@ function SSB.CheckPlayer( ply )
 	if not SSB.convars.enable:GetBool() then return end
 
 	local model = ply:GetModel()
-	local isBlacklisted = SSB.blacklist[ string.lower( model ) ]
-	if not isBlacklisted and not SSB.forbidden[ string.lower( model ) ] then return end
+	local isBlacklisted = SSB.blacklist[ SSB.NormalizePath( model ) ]
+	if not isBlacklisted and not SSB.forbidden[ SSB.NormalizePath( model ) ] then return end
 
 	SSB.CheckAccess( ply, SSB.PRIVILEGE_SUPPRESS_CHECK, function( hasAccess )
 		-- The access check may be asynchronous, the model could change meanwhile

@@ -18,6 +18,8 @@ local PHRASES = {
 		[ 'SSB.NoBodygroups' ] = 'The model has no skins or bodygroups to choose from',
 		[ 'SSB.BodygroupsReplaced' ] = 'Forbidden skin or bodygroups were replaced',
 		[ 'SSB.LastValue' ] = 'The last allowed value can\'t be forbidden',
+		[ 'SSB.InvalidValue' ] = 'The model has no such skin or bodygroup value',
+		[ 'SSB.TooFast' ] = 'Too many changes at once, wait a second',
 	},
 	ru = {
 		[ 'SSB.Title' ] = 'Чёрный список скинов',
@@ -37,6 +39,8 @@ local PHRASES = {
 		[ 'SSB.NoBodygroups' ] = 'У модели нет скинов и бадигрупп на выбор',
 		[ 'SSB.BodygroupsReplaced' ] = 'Запрещённые скин или бадигруппы были заменены',
 		[ 'SSB.LastValue' ] = 'Последнее разрешённое значение нельзя запретить',
+		[ 'SSB.InvalidValue' ] = 'У модели нет такого значения скина или бадигруппы',
+		[ 'SSB.TooFast' ] = 'Слишком много изменений подряд, подождите секунду',
 	},
 	uk = {
 		[ 'SSB.Title' ] = 'Чорний список скінів',
@@ -56,6 +60,8 @@ local PHRASES = {
 		[ 'SSB.NoBodygroups' ] = 'У моделі немає скінів і бодігруп на вибір',
 		[ 'SSB.BodygroupsReplaced' ] = 'Заборонені скін або бодігрупи було замінено',
 		[ 'SSB.LastValue' ] = 'Останнє дозволене значення не можна заборонити',
+		[ 'SSB.InvalidValue' ] = 'У моделі немає такого значення скіна чи бодігрупи',
+		[ 'SSB.TooFast' ] = 'Забагато змін поспіль, зачекайте секунду',
 	},
 }
 

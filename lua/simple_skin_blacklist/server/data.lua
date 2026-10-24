@@ -1,13 +1,15 @@
 
 local TABLE_NAME = 'simple_skin_blacklist'
-local MODEL_LENGTH = 255
 -- list_id of blacklisted rows, the column is kept for possible other lists
 local BLACKLIST_ID = 1
 local OLD_DATA_FILE = 'simple_skin_blacklist.json'
 local OLD_DATA_BACKUP = 'simple_skin_blacklist_old.json'
 -- Forbidden bodygroup and skin values, a row per value
 local BODYGROUPS_TABLE = 'simple_skin_blacklist_bodygroups'
-local BODYGROUP_LENGTH = 64
+-- Values are stored as text: a signed TINYINT of MySQL can't hold the values over 127
+local VALUE_LENGTH = 8
+-- Entity that only reads the skins and bodygroups of a model, it's never spawned
+local MODEL_INFO_ENTITY = 'prop_dynamic'
 
 local SELECT_QUERY = 'SELECT model FROM ' .. TABLE_NAME .. ' WHERE list_id = ?'
 -- Rows of the removed alternatives list, they would block blacklisting the same models by the primary key
@@ -26,7 +28,7 @@ local function rebuildAlternatives()
 
 	alternatives = {}
 	for _, path in pairs( player_manager.AllValidModels() ) do
-		if SSB.blacklist[ string.lower( path ) ] then continue end
+		if SSB.blacklist[ SSB.NormalizePath( path ) ] then continue end
 		alternatives[ #alternatives + 1 ] = path
 	end
 
@@ -44,7 +46,7 @@ end
 ]]--
 function SSB.SetBlacklisted( model, isBlacklisted )
 
-	model = string.lower( model )
+	model = SSB.NormalizePath( model )
 	if tobool( SSB.blacklist[ model ] ) == isBlacklisted then return true end
 
 	SSB.blacklist[ model ] = isBlacklisted or nil
@@ -80,27 +82,57 @@ local function setForbiddenInMemory( model, group, value, isForbidden )
 end
 
 --[[
+	Number of values of the skin and of each bodygroup of a model.
+	The server can read the bodygroups of a model only from an entity, a temporary one is made.
+	Used only for the menu changes, so it isn't cached.
+	@param model string - valid model path
+	@return table - { [ bodygroup name or SSB.SKIN_GROUP ] = count }
+]]--
+local function getGroupCounts( model )
+
+	local ent = ents.Create( MODEL_INFO_ENTITY )
+	ent:SetModel( model )
+
+	local counts = { [ SSB.SKIN_GROUP ] = ent:SkinCount() }
+	for _, bodygroup in ipairs( ent:GetBodyGroups() ) do
+		counts[ bodygroup.name ] = bodygroup.num
+	end
+
+	ent:Remove()
+	return counts
+
+end
+
+--[[
 	Allow or forbid a bodygroup or skin value of a model.
-	The menu keeps at least one allowed value of each group, the check skips a group without allowed values.
+	At least one value of each group stays allowed.
 	@param model string - model path
 	@param group string - bodygroup name or SSB.SKIN_GROUP
 	@param value number
 	@param isAllowed boolean
+	@return string|nil - phrase of the reason if refused
 ]]--
 function SSB.SetBodygroupAllowed( model, group, value, isAllowed )
 
-	model = string.lower( model )
+	model = SSB.NormalizePath( model )
 	local values = SSB.forbidden[ model ] and SSB.forbidden[ model ][ group ]
 	local isForbidden = tobool( values and values[ value ] )
 	-- Already in the requested state
 	if isForbidden ~= isAllowed then return end
 
+	-- Allowing only removes a stored value, forbidding has to match the model
+	if not isAllowed then
+		local count = util.IsValidModel( model ) and getGroupCounts( model )[ group ]
+		if not count or value >= count then return 'SSB.InvalidValue' end
+		if count - table.Count( values or {} ) <= 1 then return 'SSB.LastValue' end
+	end
+
 	setForbiddenInMemory( model, group, value, not isAllowed )
 
 	if isAllowed then
-		db:Query( DELETE_BODYGROUP_QUERY, { model, group, value } )
+		db:Query( DELETE_BODYGROUP_QUERY, { model, group, tostring( value ) } )
 	else
-		db:Query( INSERT_BODYGROUP_QUERY, { model, group, value } )
+		db:Query( INSERT_BODYGROUP_QUERY, { model, group, tostring( value ) } )
 	end
 
 end
@@ -133,6 +165,8 @@ local function onLoaded( results, err )
 	rebuildAlternatives()
 	if file.Exists( OLD_DATA_FILE, 'DATA' ) then migrateOldData() end
 	SSB.ResetChecks()
+	-- Players who joined before the DB answered got empty lists
+	SSB.SendSync()
 
 end
 
@@ -145,6 +179,7 @@ local function onBodygroupsLoaded( results, err )
 	end
 
 	SSB.ResetChecks()
+	SSB.SendSync()
 
 end
 
@@ -153,16 +188,16 @@ hook.Add( 'InitPostEntity', 'SSB.LoadData', function()
 
 	db = TeraLib.db:GetDefaultDB()
 	db:MakeTable( TABLE_NAME, {
-		{ name = 'model', type = 'VARCHAR', len = MODEL_LENGTH, primarykey = true },
+		{ name = 'model', type = 'VARCHAR', len = SSB.MODEL_LENGTH, primarykey = true },
 		{ name = 'list_id', type = 'TINYINT' },
 	}, true )
 	db:Query( CLEANUP_QUERY, { BLACKLIST_ID } )
 	db:Query( SELECT_QUERY, { BLACKLIST_ID }, onLoaded )
 
 	db:MakeTable( BODYGROUPS_TABLE, {
-		{ name = 'model', type = 'VARCHAR', len = MODEL_LENGTH },
-		{ name = 'bodygroup', type = 'VARCHAR', len = BODYGROUP_LENGTH },
-		{ name = 'value', type = 'TINYINT' },
+		{ name = 'model', type = 'VARCHAR', len = SSB.MODEL_LENGTH },
+		{ name = 'bodygroup', type = 'VARCHAR', len = SSB.GROUP_LENGTH },
+		{ name = 'value', type = 'VARCHAR', len = VALUE_LENGTH },
 	}, true )
 	db:Query( SELECT_BODYGROUPS_QUERY, nil, onBodygroupsLoaded )
 

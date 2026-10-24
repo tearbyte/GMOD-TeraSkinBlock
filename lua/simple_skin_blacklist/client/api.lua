@@ -14,7 +14,7 @@ end
 	@return boolean - whether the local player can use the model
 ]]--
 function SSB.IsModelAllowed( path )
-	return not isRestricted() or not SSB.blacklist[ string.lower( path ) ]
+	return not isRestricted() or not SSB.blacklist[ SSB.NormalizePath( path ) ]
 end
 
 --[[
@@ -27,7 +27,7 @@ function SSB.IsValueAllowed( path, group, value )
 
 	if not isRestricted() then return true end
 
-	local groups = SSB.forbidden[ string.lower( path ) ]
+	local groups = SSB.forbidden[ SSB.NormalizePath( path ) ]
 	return not ( groups and groups[ group ] and groups[ group ][ value ] )
 
 end

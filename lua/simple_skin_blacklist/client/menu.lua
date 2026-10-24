@@ -287,8 +287,8 @@ local function fillModelList( filter )
 		if filter ~= '' and not string.find( string.lower( name .. ' ' .. path ), filter, 1, true ) then continue end
 
 		local line = modelList:AddLine( name )
-		-- Lowercase like the blacklist keys, cached for Paint
-		line.modelPath = string.lower( path )
+		-- Normalized like the blacklist keys, cached for Paint
+		line.modelPath = SSB.NormalizePath( path )
 		line.Paint = paintLine
 		line.OnMousePressed = onLinePressed
 	end
@@ -370,7 +370,7 @@ local function buildMenu()
 	} )
 	fillModelList( '' )
 
-	selectModel( string.lower( LocalPlayer():GetModel() ) )
+	selectModel( SSB.NormalizePath( LocalPlayer():GetModel() ) )
 
 	return panel
 

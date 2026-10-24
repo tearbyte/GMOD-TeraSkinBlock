@@ -1,9 +1,10 @@
 
 SSB = SSB or {}
 
-SSB.MODEL_COUNT_BITS = 16
-SSB.GROUP_COUNT_BITS = 8
 SSB.VALUE_BITS = 8
+-- Longest model path and bodygroup name accepted from the menu, the sizes of the DB columns
+SSB.MODEL_LENGTH = 255
+SSB.GROUP_LENGTH = 64
 -- Key of the model skin among the bodygroup names, the skin is restricted like one more bodygroup
 SSB.SKIN_GROUP = '$skin'
 
@@ -22,6 +23,14 @@ SSB.LOG_CATEGORY = 'SimpleSkinBlacklist'
 SSB.NOTIFY_ERROR = { type = TeraLib.notify.TYPE_ERROR, style = TeraLib.notify.STYLE_TERALIB }
 
 local CONVAR_FLAGS = { FCVAR_ARCHIVE, FCVAR_REPLICATED }
+local SYNC_SIZE_BITS = 32
+-- Sync format: a line per record, fields split by tabs. Paths and bodygroup names have neither
+local LINE_SEPARATOR = '\n'
+local FIELD_SEPARATOR = '\t'
+local BLACKLIST_RECORD = 'b'
+local FORBIDDEN_RECORD = 'f'
+-- First line, so the compressed text is never empty
+local SYNC_HEADER = 'ssb'
 
 -- Keys are sent by the menu in NET_SET_CONVAR
 SSB.convars = {
@@ -30,80 +39,71 @@ SSB.convars = {
 	supressSuperadmin = CreateConVar( 'simple_skin_blacklist_supress_superadmin', 1, CONVAR_FLAGS, 'Superadmins skip the skin check (used without CAMI)' ),
 }
 
--- Blacklisted models: { [ lowercase path ] = true }, every other player model is allowed and can replace them
+-- Blacklisted models: { [ normalized path ] = true }, every other player model is allowed and can replace them
 SSB.blacklist = {}
--- Forbidden bodygroup and skin values: { [ lowercase path ] = { [ bodygroup name or SSB.SKIN_GROUP ] = { [ value ] = true } } }
+-- Forbidden bodygroup and skin values: { [ normalized path ] = { [ bodygroup name or SSB.SKIN_GROUP ] = { [ value ] = true } } }
 SSB.forbidden = {}
 
 --[[
-	Write an array of model paths into the started net message.
-	@param models table - array of strings
+	Bring a model path to the form the lists are keyed by: lowercase with forward slashes.
+	Windows clients and some addons set models with backslashes.
+	@param path string
+	@return string
 ]]--
-function SSB.WriteModels( models )
-
-	net.WriteUInt( #models, SSB.MODEL_COUNT_BITS )
-	for _, model in ipairs( models ) do
-		net.WriteString( model )
-	end
-
+function SSB.NormalizePath( path )
+	return ( string.gsub( string.lower( path ), '\\', '/' ) )
 end
 
 --[[
-	Read an array of model paths written by SSB.WriteModels.
-	@return table - array of strings
+	Write the blacklist and the forbidden values into the started net message.
+	Compressed: the plain lists of big model packs would exceed the net message size limit.
 ]]--
-function SSB.ReadModels()
+function SSB.WriteSync()
 
-	local models = {}
-	for i = 1, net.ReadUInt( SSB.MODEL_COUNT_BITS ) do
-		models[ i ] = net.ReadString()
+	local lines = { SYNC_HEADER }
+	for model in pairs( SSB.blacklist ) do
+		lines[ #lines + 1 ] = BLACKLIST_RECORD .. FIELD_SEPARATOR .. model
 	end
 
-	return models
-
-end
-
---[[
-	Write SSB.forbidden into the started net message.
-]]--
-function SSB.WriteForbidden()
-
-	net.WriteUInt( table.Count( SSB.forbidden ), SSB.MODEL_COUNT_BITS )
 	for model, groups in pairs( SSB.forbidden ) do
-		net.WriteString( model )
-		net.WriteUInt( table.Count( groups ), SSB.GROUP_COUNT_BITS )
-
 		for group, values in pairs( groups ) do
-			net.WriteString( group )
-			net.WriteUInt( table.Count( values ), SSB.VALUE_BITS )
 			for value in pairs( values ) do
-				net.WriteUInt( value, SSB.VALUE_BITS )
+				lines[ #lines + 1 ] = table.concat( { FORBIDDEN_RECORD, model, group, value }, FIELD_SEPARATOR )
 			end
 		end
 	end
+
+	local data = util.Compress( table.concat( lines, LINE_SEPARATOR ) )
+	net.WriteUInt( #data, SYNC_SIZE_BITS )
+	net.WriteData( data, #data )
 
 end
 
 --[[
-	Read the forbidden values written by SSB.WriteForbidden.
-	@return table - same format as SSB.forbidden
+	Read the data written by SSB.WriteSync.
+	@return table, table - the blacklist and the forbidden values, same format as SSB.blacklist and SSB.forbidden
 ]]--
-function SSB.ReadForbidden()
+function SSB.ReadSync()
 
+	local blacklist = {}
 	local forbidden = {}
-	for _ = 1, net.ReadUInt( SSB.MODEL_COUNT_BITS ) do
-		local groups = {}
-		forbidden[ net.ReadString() ] = groups
+	local text = util.Decompress( net.ReadData( net.ReadUInt( SYNC_SIZE_BITS ) ) )
 
-		for _ = 1, net.ReadUInt( SSB.GROUP_COUNT_BITS ) do
-			local values = {}
-			groups[ net.ReadString() ] = values
-			for _ = 1, net.ReadUInt( SSB.VALUE_BITS ) do
-				values[ net.ReadUInt( SSB.VALUE_BITS ) ] = true
-			end
+	for _, line in ipairs( string.Explode( LINE_SEPARATOR, text ) ) do
+		local fields = string.Explode( FIELD_SEPARATOR, line )
+		if fields[ 1 ] == BLACKLIST_RECORD then
+			blacklist[ fields[ 2 ] ] = true
+			continue
 		end
+
+		if fields[ 1 ] ~= FORBIDDEN_RECORD then continue end
+
+		local groups = forbidden[ fields[ 2 ] ] or {}
+		forbidden[ fields[ 2 ] ] = groups
+		groups[ fields[ 3 ] ] = groups[ fields[ 3 ] ] or {}
+		groups[ fields[ 3 ] ][ tonumber( fields[ 4 ] ) ] = true
 	end
 
-	return forbidden
+	return blacklist, forbidden
 
 end

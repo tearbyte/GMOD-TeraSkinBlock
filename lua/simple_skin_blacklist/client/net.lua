@@ -12,13 +12,7 @@ end )
 -- The menu rows read SSB.blacklist when they are painted, only the bodygroups panel is updated
 net.Receive( SSB.NET_SYNC, function()
 
-	local blacklist = {}
-	for _, model in ipairs( SSB.ReadModels() ) do
-		blacklist[ model ] = true
-	end
-
-	SSB.blacklist = blacklist
-	SSB.forbidden = SSB.ReadForbidden()
+	SSB.blacklist, SSB.forbidden = SSB.ReadSync()
 	SSB.RefreshMenu()
 	hook.Run( 'SSB.Updated' )
 
