@@ -2,9 +2,10 @@
 util.AddNetworkString( SSB.NET_ACCESS )
 util.AddNetworkString( SSB.NET_SYNC )
 util.AddNetworkString( SSB.NET_CHANGE )
+util.AddNetworkString( SSB.NET_CHANGE_BODYGROUP )
 util.AddNetworkString( SSB.NET_SET_CONVAR )
 
--- Players with access to the menu, they get the blacklist
+-- Players with access to the menu, they get the blacklist and the forbidden values
 local menuUsers = setmetatable( {}, { __mode = 'k' } )
 
 local function isMenuUser( ply )
@@ -12,13 +13,14 @@ local function isMenuUser( ply )
 end
 
 --[[
-	Send the blacklist.
+	Send the blacklist and the forbidden bodygroup and skin values.
 	@param target - see TeraLib.net.SendTo
 ]]--
 local function sendSync( target )
 
 	net.Start( SSB.NET_SYNC )
 	SSB.WriteModels( table.GetKeys( SSB.blacklist ) )
+	SSB.WriteForbidden()
 	TeraLib.net.SendTo( target )
 
 end
@@ -72,6 +74,25 @@ net.Receive( SSB.NET_CHANGE, function( _, ply )
 		end
 
 		TeraLib.logger:Info( SSB.LOG_CATEGORY, '%s (%s) %s %s', ply:Nick(), ply:SteamID(), isBlacklisted and 'blacklisted' or 'allowed', model )
+		SSB.ResetChecks()
+		sendSync( isMenuUser )
+	end )
+
+end )
+
+net.Receive( SSB.NET_CHANGE_BODYGROUP, function( _, ply )
+
+	local model = net.ReadString()
+	local group = net.ReadString()
+	local value = net.ReadUInt( SSB.VALUE_BITS )
+	local isAllowed = net.ReadBool()
+
+	SSB.CheckAccess( ply, SSB.PRIVILEGE_MENU, function( hasAccess )
+		if not hasAccess or not IsValid( ply ) then return end
+
+		SSB.SetBodygroupAllowed( model, group, value, isAllowed )
+
+		TeraLib.logger:Info( SSB.LOG_CATEGORY, '%s (%s) %s %s %s of %s', ply:Nick(), ply:SteamID(), isAllowed and 'allowed' or 'forbade', group, value, model )
 		SSB.ResetChecks()
 		sendSync( isMenuUser )
 	end )
