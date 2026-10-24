@@ -1,13 +1,13 @@
 
 local ROOT = 'simple_skin_blacklist/'
 local WORKSHOP_ID = '3006392625'
-local WARNING_FILE = ROOT .. 'cl_teralib_warning.lua'
+local WARNING_FILE = ROOT .. 'client/teralib_warning.lua'
 local ERROR_COLOR = Color( 255, 80, 80 )
 
--- Load order matters: sh_init defines the SSB table and the constants for the rest
-local SHARED_FILES = { 'sh_init.lua', 'sh_lang.lua' }
-local SERVER_FILES = { 'sv_access.lua', 'sv_data.lua', 'sv_check.lua', 'sv_net.lua' }
-local CLIENT_FILES = { 'cl_menu.lua', 'cl_net.lua' }
+-- Load order matters: init defines the SSB table and the constants for the rest
+local SHARED_FILES = { 'init.lua', 'lang.lua' }
+local SERVER_FILES = { 'server/access.lua', 'server/data.lua', 'server/check.lua', 'server/net.lua' }
+local CLIENT_FILES = { 'client/menu.lua', 'client/net.lua' }
 
 if SERVER then
 
