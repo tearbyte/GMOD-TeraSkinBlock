@@ -7,7 +7,7 @@ net.Receive( SSB.NET_ACCESS, function()
 
 end )
 
--- The menu rows read SSB.blacklist when they are painted, so nothing has to be refreshed
+-- The menu rows read SSB.blacklist when they are painted, only the bodygroups panel is rebuilt
 net.Receive( SSB.NET_SYNC, function()
 
 	local blacklist = {}
@@ -16,5 +16,7 @@ net.Receive( SSB.NET_SYNC, function()
 	end
 
 	SSB.blacklist = blacklist
+	SSB.forbidden = SSB.ReadForbidden()
+	SSB.RefreshMenu()
 
 end )
