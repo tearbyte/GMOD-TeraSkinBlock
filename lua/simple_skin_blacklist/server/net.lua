@@ -1,8 +1,6 @@
 
--- Requests a player can send per RATE_WINDOW seconds, the rest are dropped
 local RATE_LIMIT = 2
 local RATE_WINDOW = 1
--- Replaces the control characters of the strings from the clients in the log, so they can't fake log lines
 local LOG_CONTROL_REPLACEMENT = '?'
 
 util.AddNetworkString( SSB.NET_ACCESS )
@@ -11,14 +9,8 @@ util.AddNetworkString( SSB.NET_CHANGE )
 util.AddNetworkString( SSB.NET_CHANGE_BODYGROUP )
 util.AddNetworkString( SSB.NET_SET_CONVAR )
 
--- Request counting window of each player: { start = SysTime(), count = number }
 local rateWindows = setmetatable( {}, { __mode = 'k' } )
 
---[[
-	Send the blacklist and the forbidden bodygroup and skin values.
-	Every player gets them: the player model selectors hide what is forbidden.
-	@param target - see TeraLib.net.SendTo, everyone if nil
-]]--
 function SSB.SendSync( target )
 
 	net.Start( SSB.NET_SYNC )
@@ -31,13 +23,6 @@ local function sanitizeForLog( str )
 	return ( string.gsub( str, '%c', LOG_CONTROL_REPLACEMENT ) )
 end
 
---[[
-	Count a request of the player against the rate limit.
-	The first dropped request of a window tells an admin about it and sends the lists back, so the menu
-	shows the real state again. The next ones are dropped silently, so flooding isn't answered.
-	@param ply Player
-	@return boolean - true if the request fits the limit
-]]--
 local function acceptRequest( ply )
 
 	local now = SysTime()
@@ -62,11 +47,6 @@ local function acceptRequest( ply )
 
 end
 
---[[
-	Tell the client whether it can open the menu, whether it skips the check,
-	and whether the check skipping is configured by an admin addon.
-	@param ply Player
-]]--
 local function sendAccess( ply )
 
 	SSB.CheckAccess( ply, SSB.PRIVILEGE_MENU, function( hasAccess )
@@ -92,7 +72,6 @@ hook.Add( 'TeraLib.PlayerFullyInitialized', 'SSB.SendAccess', function( ply )
 
 end )
 
--- Without CAMI these convars decide who skips the check
 for _, convar in ipairs( { SSB.convars.supressAdmin, SSB.convars.supressSuperadmin } ) do
 	cvars.AddChangeCallback( convar:GetName(), function()
 		for _, ply in player.Iterator() do
@@ -151,7 +130,6 @@ net.Receive( SSB.NET_CHANGE_BODYGROUP, function( _, ply )
 		local refusal = SSB.SetBodygroupAllowed( model, group, value, isAllowed )
 		if refusal then
 			TeraLib.Notify( ply, refusal, SSB.NOTIFY_ERROR )
-			-- The menu has already switched the value, the lists bring it back
 			SSB.SendSync( ply )
 			return
 		end

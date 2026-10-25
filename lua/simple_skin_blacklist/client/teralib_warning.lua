@@ -1,7 +1,4 @@
 
--- Included only without TeraLib, so only stock Derma and its own phrases are used here.
--- Every TeraLib addon ships this file: the addons add their names to one list, one window shows them all
-
 local ADDON_NAME = 'TeraSkinBlock'
 local WARNING_DELAY = 10
 local WINDOW_WIDTH = 500
@@ -14,7 +11,6 @@ local BUTTON_HEIGHT = 25
 local DEFAULT_LANG = 'en'
 local TERALIB_URL = 'https://steamcommunity.com/sharedfiles/filedetails/?id=3013984464'
 
--- By gmod_language, other languages get the English phrases. {addons} is the list of the addons
 local PHRASES = {
 	en = {
 		title = 'TeraLib is required',
@@ -36,7 +32,7 @@ local PHRASES = {
 TeraLibMissingAddons = TeraLibMissingAddons or {}
 table.insert( TeraLibMissingAddons, ADDON_NAME )
 
--- The first addon shows the window for every one of them
+-- The first addon shows one window for all of them
 if #TeraLibMissingAddons > 1 then return end
 
 local function showWarning()
@@ -53,7 +49,6 @@ local function showWarning()
 	local button = vgui.Create( 'DButton', frame )
 	button:Dock( BOTTOM )
 	button:SetTall( BUTTON_HEIGHT )
-	-- Centered: equal side margins
 	local sideMargin = ( WINDOW_WIDTH - BUTTON_WIDTH ) / 2
 	button:DockMargin( sideMargin, 0, sideMargin, 0 )
 	button:SetText( phrases.install )
@@ -68,7 +63,6 @@ local function showWarning()
 
 end
 
--- The other addons register their names while the autorun files run, the window is shown after
 hook.Add( 'InitPostEntity', 'TeraLib.MissingWarning', function()
 	timer.Simple( WARNING_DELAY, showWarning )
 end )

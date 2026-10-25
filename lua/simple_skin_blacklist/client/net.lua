@@ -9,7 +9,6 @@ net.Receive( SSB.NET_ACCESS, function()
 
 end )
 
--- The menu rows read SSB.blacklist when they are painted, only the bodygroups panel is updated
 net.Receive( SSB.NET_SYNC, function()
 
 	SSB.blacklist, SSB.forbidden = SSB.ReadSync()

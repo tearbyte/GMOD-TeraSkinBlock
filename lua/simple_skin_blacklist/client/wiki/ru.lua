@@ -1,6 +1,4 @@
 
--- Russian phrases of the TeraWiki pages of the addon
-
 local PHRASES = {
 	-- Page usage
 	[ 'SSB.Wiki.Section' ] = 'TeraSkinBlock',

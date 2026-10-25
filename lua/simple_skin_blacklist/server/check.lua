@@ -3,15 +3,8 @@ local CHECK_INTERVAL = 1
 local CHECK_TIMER = 'SSB.CheckModels'
 local KEY_SEPARATOR = ':'
 
--- Last checked appearance of each player, the polling skips players whose appearance hasn't changed
 local checkedAppearance = setmetatable( {}, { __mode = 'k' } )
 
---[[
-	The model, and the skin with bodygroups if the model has restricted values.
-	Built every polling tick, so the bodygroups are read only for restricted models.
-	@param ply Player
-	@return string
-]]--
 local function getAppearanceKey( ply )
 
 	local model = ply:GetModel()
@@ -26,12 +19,6 @@ local function getAppearanceKey( ply )
 
 end
 
---[[
-	A random value from 0 to count - 1 that isn't forbidden.
-	@param forbidden table - { [ value ] = true }
-	@param count number
-	@return number|nil - nil if every value is forbidden
-]]--
 local function getRandomAllowed( forbidden, count )
 
 	local allowed = {}
@@ -44,11 +31,6 @@ local function getRandomAllowed( forbidden, count )
 
 end
 
---[[
-	Replace the forbidden skin and bodygroup values of the player with random allowed ones.
-	@param ply Player
-	@return boolean - true if something was replaced
-]]--
 local function replaceForbiddenValues( ply )
 
 	local groups = SSB.forbidden[ SSB.NormalizePath( ply:GetModel() ) ]
@@ -80,11 +62,6 @@ local function replaceForbiddenValues( ply )
 
 end
 
---[[
-	Replace the model of the player if it's blacklisted, then its forbidden skin and bodygroup values,
-	unless the player can skip the check.
-	@param ply Player
-]]--
 function SSB.CheckPlayer( ply )
 
 	checkedAppearance[ ply ] = getAppearanceKey( ply )
@@ -100,7 +77,6 @@ function SSB.CheckPlayer( ply )
 		if hasAccess or not IsValid( ply ) or ply:GetModel() ~= model then return end
 
 		if isBlacklisted then ply:SetModel( SSB.GetRandomAlternative() ) end
-		-- The alternative may have restricted values too
 		local replacedValues = replaceForbiddenValues( ply )
 		checkedAppearance[ ply ] = getAppearanceKey( ply )
 
@@ -113,10 +89,6 @@ function SSB.CheckPlayer( ply )
 
 end
 
---[[
-	Make the polling check players again, even if their appearance hasn't changed.
-	@param ply Player|nil - one player, everyone if nil
-]]--
 function SSB.ResetChecks( ply )
 
 	if ply then
@@ -141,7 +113,6 @@ end
 hook.Add( 'PlayerSpawn', 'SSB.CheckModel', checkNextTick )
 hook.Add( 'PlayerChangedTeam', 'SSB.CheckModel', checkNextTick )
 
--- Catches models, skins and bodygroups set by other addons outside of the hooks above
 timer.Create( CHECK_TIMER, CHECK_INTERVAL, 0, function()
 
 	for _, ply in player.Iterator() do

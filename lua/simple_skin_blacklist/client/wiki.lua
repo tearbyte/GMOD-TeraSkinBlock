@@ -1,6 +1,4 @@
 
--- Pages of the addon in TeraWiki, added only if the wiki is installed
-
 local SECTION = 'simple_skin_blacklist'
 
 local function addPages()

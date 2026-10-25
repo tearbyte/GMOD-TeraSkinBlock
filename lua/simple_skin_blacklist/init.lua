@@ -2,10 +2,10 @@
 SSB = SSB or {}
 
 SSB.VALUE_BITS = 8
--- Longest model path and bodygroup name accepted from the menu, the sizes of the DB columns
+-- Sizes of the DB columns
 SSB.MODEL_LENGTH = 255
 SSB.GROUP_LENGTH = 64
--- Key of the model skin among the bodygroup names, the skin is restricted like one more bodygroup
+-- The skin is restricted as one more bodygroup
 SSB.SKIN_GROUP = '$skin'
 
 SSB.PRIVILEGE_MENU = 'simple_skin_blacklist_menu'
@@ -19,45 +19,31 @@ SSB.NET_SET_CONVAR = 'SimpleSkinBlacklist.SetConVar'
 
 SSB.LOG_CATEGORY = 'SimpleSkinBlacklist'
 
--- TeraLib.Notify data of the addon errors, read-only
 SSB.NOTIFY_ERROR = { type = TeraLib.notify.TYPE_ERROR, style = TeraLib.notify.STYLE_TERALIB }
 
 local CONVAR_FLAGS = { FCVAR_ARCHIVE, FCVAR_REPLICATED }
 local SYNC_SIZE_BITS = 32
--- Sync format: a line per record, fields split by tabs. Paths and bodygroup names have neither
 local LINE_SEPARATOR = '\n'
 local FIELD_SEPARATOR = '\t'
 local BLACKLIST_RECORD = 'b'
 local FORBIDDEN_RECORD = 'f'
--- First line, so the compressed text is never empty
+-- So the compressed text is never empty
 local SYNC_HEADER = 'ssb'
 
--- Keys are sent by the menu in NET_SET_CONVAR
 SSB.convars = {
 	enable = CreateConVar( 'simple_skin_blacklist_enable', 1, CONVAR_FLAGS, 'Enable the skin blacklist' ),
 	supressAdmin = CreateConVar( 'simple_skin_blacklist_supress_admin', 1, CONVAR_FLAGS, 'Admins skip the skin check (used without CAMI)' ),
 	supressSuperadmin = CreateConVar( 'simple_skin_blacklist_supress_superadmin', 1, CONVAR_FLAGS, 'Superadmins skip the skin check (used without CAMI)' ),
 }
 
--- Blacklisted models: { [ normalized path ] = true }, every other player model is allowed and can replace them
 SSB.blacklist = {}
--- Forbidden bodygroup and skin values: { [ normalized path ] = { [ bodygroup name or SSB.SKIN_GROUP ] = { [ value ] = true } } }
+-- { [ path ] = { [ group ] = { [ value ] = true } } }
 SSB.forbidden = {}
 
---[[
-	Bring a model path to the form the lists are keyed by: lowercase with forward slashes.
-	Windows clients and some addons set models with backslashes.
-	@param path string
-	@return string
-]]--
 function SSB.NormalizePath( path )
 	return ( string.gsub( string.lower( path ), '\\', '/' ) )
 end
 
---[[
-	Write the blacklist and the forbidden values into the started net message.
-	Compressed: the plain lists of big model packs would exceed the net message size limit.
-]]--
 function SSB.WriteSync()
 
 	local lines = { SYNC_HEADER }
@@ -79,10 +65,6 @@ function SSB.WriteSync()
 
 end
 
---[[
-	Read the data written by SSB.WriteSync.
-	@return table, table - the blacklist and the forbidden values, same format as SSB.blacklist and SSB.forbidden
-]]--
 function SSB.ReadSync()
 
 	local blacklist = {}
