@@ -7,7 +7,6 @@ local HINT_LINES = 2
 local PATH_LINES = 2
 local SEARCH_GAP = 2 -- Paddings between the switches and the search
 local SWITCH_PADDING = 4
-local SWITCH_TYPE = 5 -- Round knob
 local ALIGNMENT_LEFT = 4
 local BODYGROUPS_WIDTH = 320
 local PREVIEW_WIDTH = 300
@@ -17,6 +16,10 @@ local PREVIEW_ANGLE = Angle( 0, 25, 0 ) -- Three-quarter view
 local HALF = 0.5
 local CATEGORY_ICON = 'icon16/user_delete.png'
 local MENU_COMMAND = 'simple_skin_blacklist_menu'
+local WIKI_BUTTON_WIDTH = 100
+local WIKI_ICON = 'icon16/book_open.png'
+local WIKI_SECTION = 'simple_skin_blacklist'
+local WIKI_PAGE = 'usage'
 
 local menuPanel, modelList, preview, pathLabel, bodygroupsPanel
 -- Settings window the category was added to: on GUI reload the old window is still valid until the end of the frame
@@ -125,7 +128,6 @@ local function switchRow( parent, text, active, onToggle )
 		parent = row,
 		dock = LEFT,
 		dockMargin = { switchPadding, switchPadding, 0, switchPadding },
-		type = SWITCH_TYPE,
 		height = rowHeight - switchPadding * 2,
 		active = active,
 		OnToggle = onToggle,
@@ -316,11 +318,28 @@ local function buildMenu()
 		convarRow( panel, 'SSB.SupressSuperadmin', 'supressSuperadmin' )
 	end
 
+	local searchRow = vgui.Create( 'DPanel', panel )
+	searchRow:Dock( TOP )
+	searchRow:SetTall( rowHeight )
+	searchRow:DockMargin( 0, pad * SEARCH_GAP, 0, pad )
+	searchRow:SetPaintBackground( false )
+
+	-- The wiki is an optional addon
+	if TeraLibWiki then
+		TeraLib.vgui.ColorableButton( {
+			parent = searchRow,
+			dock = RIGHT,
+			size = { x = TeraLib.util.ScrW( WIKI_BUTTON_WIDTH ), y = 0 },
+			dockMargin = { pad, 0, 0, 0 },
+			text = TeraLib.lang.GetPhrase( 'SSB.Wiki' ),
+			icon = WIKI_ICON,
+			DoClick = function() TeraLibWiki.Open( WIKI_SECTION, WIKI_PAGE ) end,
+		} )
+	end
+
 	TeraLib.vgui.TextEntry( {
-		parent = panel,
-		dock = TOP,
-		size = { x = 0, y = rowHeight },
-		dockMargin = { 0, pad * SEARCH_GAP, 0, pad },
+		parent = searchRow,
+		dock = FILL,
 		placeholder = TeraLib.lang.GetPhrase( 'SSB.Search' ),
 		OnUpdate = function( _, value ) fillModelList( string.lower( value ) ) end,
 	} )
