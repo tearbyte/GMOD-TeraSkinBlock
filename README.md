@@ -1,7 +1,7 @@
 
 # Simple Skin Blacklist
 
-[Русская версия](README.ru.md)
+[Русская версия](#русская-версия)
 
 A Garry's Mod addon that stops players from using chosen player models, skins and bodygroups. Everything is checked on the server: a player with a forbidden model gets a random allowed one, forbidden skin and bodygroup values are replaced with random allowed values.
 
@@ -98,5 +98,111 @@ lua/
         ├── api.lua                      API for other addons
         ├── menu.lua                     TeraLib settings page
         ├── net.lua
-        └── teralib_warning.lua          window shown without TeraLib
+        ├── teralib_warning.lua          window shown without TeraLib
+        ├── wiki/                        phrases of the wiki pages, a file per language
+        └── wiki.lua                     pages in TeraLib Wiki, if it's installed
+```
+
+---
+
+# Русская версия
+
+Аддон для Garry's Mod, который не даёт игрокам использовать выбранные модели, скины и бадигруппы. Всё проверяется на сервере: игроку с запрещённой моделью ставится случайная разрешённая, запрещённые значения скина и бадигрупп заменяются случайными разрешёнными.
+
+Сделан на [TeraLib](https://steamcommunity.com/sharedfiles/filedetails/?id=3013984464).
+
+## Возможности
+
+- **Чёрный список моделей.** Любая незапрещённая модель разрешена и может стать заменой. Последнюю разрешённую модель запретить нельзя.
+- **Скины и бадигруппы.** Для каждой модели можно запретить любое значение скина или бадигруппы. Хотя бы одно значение каждой группы всегда остаётся разрешённым.
+- **Проверка на сервере.** Модель проверяется сразу после спавна и смены команды (включая профессии DarkRP), а модели, выставленные другими аддонами, — раз в секунду. От клиента ничего не зависит.
+- **Меню** в окне настроек TeraLib, видно только игрокам с доступом.
+- **CAMI-привилегии**, если CAMI предоставляет админ-аддон (ULX, SAM, ServerGuard…), иначе — convar'ы.
+- **Общая БД:** данные хранятся в `TeraLib.db:GetDefaultDB()` — общий MySQL, если сервер его зарегистрировал, иначе встроенный SQLite.
+- **Селекторы моделей** могут скрывать запрещённые модели и значения через клиентский API — так делает TeraLib Player Model Selector.
+- Языки: английский, русский, украинский.
+
+## Установка
+
+1. Установите [TeraLib](https://steamcommunity.com/sharedfiles/filedetails/?id=3013984464).
+2. Подпишитесь в [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3006392625) или положите эту папку в `garrysmod/addons/`.
+
+Без TeraLib аддон отключён: сервер пишет ошибку в консоль, а каждый игрок через 10 секунд после входа видит окно об этом.
+
+На выделенном сервере клиенты скачивают аддон из Workshop автоматически (`resource.AddWorkshop`). На listen-сервере это пропускается, чтобы Workshop-копия не подменяла локальную у хоста.
+
+## Использование
+
+Откройте настройки TeraLib (`teralib_settings` или иконка в контекстном меню) и выберите **Чёрный список скинов**. Старая команда `simple_skin_blacklist_menu` открывает ту же страницу.
+
+- **ЛКМ** по модели выбирает её: в панели посередине — переключатель **Разрешено** и переключатель для каждого значения скина и бадигрупп, справа — превью и путь.
+- **ПКМ** по модели переключает её.
+- Наведение на значение показывает его на превью.
+
+Запрещённые модели окрашены цветом выключенного переключателя темы.
+
+## Доступ
+
+| Привилегия | По умолчанию | Даёт |
+|---|---|---|
+| `simple_skin_blacklist_menu` | superadmin | Открытие меню и редактирование списков |
+| `simple_skin_blacklist_suppress_check` | admin | Использование запрещённых моделей и значений |
+
+Привилегии регистрируются в CAMI на `InitPostEntity`, если его предоставляет админ-аддон. Без CAMI меню доступно суперадминам, а обход проверки задают convar'ы ниже.
+
+## Convar'ы
+
+| Convar | По умолчанию | Описание |
+|---|---|---|
+| `simple_skin_blacklist_enable` | `1` | Включить чёрный список |
+| `simple_skin_blacklist_supress_admin` | `1` | Админы не проверяются (без CAMI) |
+| `simple_skin_blacklist_supress_superadmin` | `1` | Суперадмины не проверяются (без CAMI) |
+
+С CAMI вместо двух последних переключателей меню показывает «Обход проверки настраивается в админ-аддоне».
+
+## Данные
+
+Две таблицы в БД `TeraLib.db:GetDefaultDB()`:
+
+- `simple_skin_blacklist` — пути запрещённых моделей;
+- `simple_skin_blacklist_bodygroups` — строка на каждое запрещённое значение: путь модели, имя бадигруппы (`$skin` для скина), значение.
+
+`data/simple_skin_blacklist.json` старых версий переносится один раз при первом запуске и переименовывается в `simple_skin_blacklist_old.json`.
+
+## Клиентский API
+
+Для других аддонов, например селекторов моделей. Обе функции учитывают выключенный чёрный список и игроков, которые обходят проверку.
+
+```lua
+SSB.IsModelAllowed( path ) -- boolean
+SSB.IsValueAllowed( path, group, value ) -- group: имя бадигруппы или SSB.SKIN_GROUP
+
+-- Изменились чёрный список, запрещённые значения или доступ
+hook.Add( 'SSB.Updated', 'MyAddon.Refresh', function() end )
+```
+
+## Ограничения
+
+- Аддоны, меняющие внешний вид только на клиентах (PAC3, Outfitter), не учитываются: сервер проверяет настоящую модель игрока.
+- Модель, выставленная другим аддоном не при спавне и не при смене команды, держится до секунды, пока её не поймает периодическая проверка.
+
+## Структура
+
+```
+lua/
+├── autorun/simple_skin_blacklist.lua    загрузчик
+└── simple_skin_blacklist/
+    ├── init.lua, lang.lua               общие: константы, convar'ы, формат синхронизации, фразы
+    ├── server/
+    │   ├── access.lua                   CAMI-привилегии и запасной вариант
+    │   ├── data.lua                     БД, списки, перенос старых данных
+    │   ├── check.lua                    проверка модели, скина и бадигрупп
+    │   └── net.lua                      синхронизация, запросы меню, ограничение частоты
+    └── client/
+        ├── api.lua                      API для других аддонов
+        ├── menu.lua                     страница в настройках TeraLib
+        ├── net.lua
+        ├── teralib_warning.lua          окно, если TeraLib нет
+        ├── wiki/                        фразы страниц вики, по файлу на язык
+        └── wiki.lua                     страницы в TeraLib Wiki, если она установлена
 ```
