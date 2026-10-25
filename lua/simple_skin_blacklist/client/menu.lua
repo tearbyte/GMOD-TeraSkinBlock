@@ -20,6 +20,7 @@ local WIKI_BUTTON_WIDTH = 100
 local WIKI_ICON = 'icon16/book_open.png'
 local WIKI_SECTION = 'simple_skin_blacklist'
 local WIKI_PAGE = 'usage'
+local COMPANION_ICON = 'icon16/plugin_link.png'
 
 local menuPanel, modelList, preview, pathLabel, bodygroupsPanel
 -- Settings window the category was added to: on GUI reload the old window is still valid until the end of the frame
@@ -342,6 +343,17 @@ local function buildMenu()
 		dock = FILL,
 		placeholder = TeraLib.lang.GetPhrase( 'SSB.Search' ),
 		OnUpdate = function( _, value ) fillModelList( string.lower( value ) ) end,
+	} )
+
+	-- The companion addon, not on the Workshop yet
+	TeraLib.vgui.ColorableButton( {
+		parent = panel,
+		dock = BOTTOM,
+		size = { x = 0, y = rowHeight },
+		dockMargin = { 0, pad, 0, 0 },
+		text = TeraLib.lang.Format( { 'SSB.WorksWith', { 'SSB.Selector' } } ),
+		icon = COMPANION_ICON,
+		DoClick = function() TeraLib.Notify( 'SSB.ComingSoon', { style = TeraLib.notify.STYLE_TERALIB } ) end,
 	} )
 
 	local help = TeraLib.vgui.Label( {
