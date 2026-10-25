@@ -28,7 +28,7 @@ end
 -- TeraLib loads before every other autorun file, so if it's missing now, it's not installed
 if not TeraLib then
 
-	if SERVER then MsgC( ERROR_COLOR, '[Simple Skin Blacklist] TeraLib is not installed, the addon is disabled\n' ) end
+	if SERVER then MsgC( ERROR_COLOR, '[TeraSkinBlock] TeraLib is not installed, the addon is disabled\n' ) end
 	if CLIENT then include( WARNING_FILE ) end
 	return
 

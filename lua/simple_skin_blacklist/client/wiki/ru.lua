@@ -1,9 +1,9 @@
 
--- Russian phrases of the TeraLib Wiki pages of the addon
+-- Russian phrases of the TeraWiki pages of the addon
 
 local PHRASES = {
 	-- Page usage
-	[ 'SSB.Wiki.Section' ] = 'Чёрный список скинов',
+	[ 'SSB.Wiki.Section' ] = 'TeraSkinBlock',
 	[ 'SSB.Wiki.Usage.Title' ] = 'Как это работает',
 	[ 'SSB.Wiki.Usage.Text1' ] = 'Сервер запрещает некоторые модели игроков, скины и бадигруппы. Игроку с запрещённой моделью ставится случайная разрешённая, запрещённые значения скина и бадигрупп заменяются случайными разрешёнными, а игрок получает уведомление. Селекторы моделей на TeraLib скрывают запрещённое.',
 	[ 'SSB.Wiki.Usage.Heading1' ] = 'Для админов',

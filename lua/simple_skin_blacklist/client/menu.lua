@@ -21,7 +21,7 @@ local WIKI_ICON = 'icon16/book_open.png'
 local WIKI_SECTION = 'simple_skin_blacklist'
 local WIKI_PAGE = 'usage'
 local COMPANION_ICON = 'icon16/plugin_link.png'
-local COMPANION_URL = 'https://steamcommunity.com/sharedfiles/filedetails/?id=3827098662' -- TeraLib Player Model Selector
+local COMPANION_URL = 'https://steamcommunity.com/sharedfiles/filedetails/?id=3827098662' -- TeraModel
 
 local menuPanel, modelList, preview, pathLabel, bodygroupsPanel
 -- Settings window the category was added to: on GUI reload the old window is still valid until the end of the frame

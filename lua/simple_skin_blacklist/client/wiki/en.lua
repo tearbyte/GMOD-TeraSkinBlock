@@ -1,9 +1,9 @@
 
--- English phrases of the TeraLib Wiki pages of the addon
+-- English phrases of the TeraWiki pages of the addon
 
 local PHRASES = {
 	-- Page usage
-	[ 'SSB.Wiki.Section' ] = 'Skin blacklist',
+	[ 'SSB.Wiki.Section' ] = 'TeraSkinBlock',
 	[ 'SSB.Wiki.Usage.Title' ] = 'How it works',
 	[ 'SSB.Wiki.Usage.Text1' ] = 'The server forbids some player models, skins and bodygroups. A player with a forbidden model gets a random allowed one, forbidden skin and bodygroup values are replaced with random allowed ones, and the player gets a notification. Model selectors on TeraLib hide what is forbidden.',
 	[ 'SSB.Wiki.Usage.Heading1' ] = 'For admins',

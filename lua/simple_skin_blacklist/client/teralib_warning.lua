@@ -2,7 +2,7 @@
 -- Included only without TeraLib, so only stock Derma and its own phrases are used here.
 -- Every TeraLib addon ships this file: the addons add their names to one list, one window shows them all
 
-local ADDON_NAME = 'Simple Skin Blacklist'
+local ADDON_NAME = 'TeraSkinBlock'
 local WARNING_DELAY = 10
 local WINDOW_WIDTH = 500
 local WINDOW_BASE_HEIGHT = 170

@@ -1,9 +1,9 @@
 
--- Ukrainian phrases of the TeraLib Wiki pages of the addon
+-- Ukrainian phrases of the TeraWiki pages of the addon
 
 local PHRASES = {
 	-- Page usage
-	[ 'SSB.Wiki.Section' ] = 'Чорний список скінів',
+	[ 'SSB.Wiki.Section' ] = 'TeraSkinBlock',
 	[ 'SSB.Wiki.Usage.Title' ] = 'Як це працює',
 	[ 'SSB.Wiki.Usage.Text1' ] = 'Сервер забороняє деякі моделі гравців, скіни та бадигрупи. Гравцю із забороненою моделлю ставиться випадкова дозволена, заборонені значення скіна й бадигруп замінюються випадковими дозволеними, а гравець отримує сповіщення. Селектори моделей на TeraLib приховують заборонене.',
 	[ 'SSB.Wiki.Usage.Heading1' ] = 'Для адмінів',

@@ -3,7 +3,7 @@ local PRIVILEGES = {
 	{
 		Name = SSB.PRIVILEGE_MENU,
 		MinAccess = 'superadmin',
-		Description = 'Open the Simple Skin Blacklist menu and edit the lists',
+		Description = 'Open the TeraSkinBlock menu and edit the lists',
 	},
 	{
 		Name = SSB.PRIVILEGE_SUPPRESS_CHECK,

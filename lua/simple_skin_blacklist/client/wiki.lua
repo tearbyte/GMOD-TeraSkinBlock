@@ -1,5 +1,5 @@
 
--- Pages of the addon in TeraLib Wiki, added only if the wiki is installed
+-- Pages of the addon in TeraWiki, added only if the wiki is installed
 
 local SECTION = 'simple_skin_blacklist'
 

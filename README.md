@@ -1,5 +1,5 @@
 
-# Simple Skin Blacklist
+# TeraSkinBlock
 
 [Русская версия](#русская-версия)
 
@@ -15,7 +15,7 @@ Built on [TeraLib](https://steamcommunity.com/sharedfiles/filedetails/?id=301398
 - **Menu** in the TeraLib settings window, shown only to players with access.
 - **CAMI** privileges if an admin addon provides CAMI (ULX, SAM, ServerGuard…), convars otherwise.
 - **Shared database:** the data is stored in `TeraLib.db:GetDefaultDB()`, a shared MySQL if the server registers one, the built-in SQLite otherwise.
-- **Player model selectors** can hide forbidden models and values through the client API, TeraLib Player Model Selector does it.
+- **Player model selectors** can hide forbidden models and values through the client API, TeraModel does it.
 - Languages: English, Russian, Ukrainian.
 
 ## Installation
@@ -100,7 +100,7 @@ lua/
         ├── net.lua
         ├── teralib_warning.lua          window shown without TeraLib
         ├── wiki/                        phrases of the wiki pages, a file per language
-        └── wiki.lua                     pages in TeraLib Wiki, if it's installed
+        └── wiki.lua                     pages in TeraWiki, if it's installed
 ```
 
 ---
@@ -119,7 +119,7 @@ lua/
 - **Меню** в окне настроек TeraLib, видно только игрокам с доступом.
 - **CAMI-привилегии**, если CAMI предоставляет админ-аддон (ULX, SAM, ServerGuard…), иначе — convar'ы.
 - **Общая БД:** данные хранятся в `TeraLib.db:GetDefaultDB()` — общий MySQL, если сервер его зарегистрировал, иначе встроенный SQLite.
-- **Селекторы моделей** могут скрывать запрещённые модели и значения через клиентский API — так делает TeraLib Player Model Selector.
+- **Селекторы моделей** могут скрывать запрещённые модели и значения через клиентский API — так делает TeraModel.
 - Языки: английский, русский, украинский.
 
 ## Установка
@@ -204,5 +204,5 @@ lua/
         ├── net.lua
         ├── teralib_warning.lua          окно, если TeraLib нет
         ├── wiki/                        фразы страниц вики, по файлу на язык
-        └── wiki.lua                     страницы в TeraLib Wiki, если она установлена
+        └── wiki.lua                     страницы в TeraWiki, если она установлена
 ```
